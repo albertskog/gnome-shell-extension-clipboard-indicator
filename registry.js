@@ -227,6 +227,7 @@ export class ClipboardEntry {
     #mimetype;
     #bytes;
     #favorite;
+    #cachedString = null;
 
     static #decode (contents) {
         return Uint8Array.from(contents.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -305,7 +306,7 @@ export class ClipboardEntry {
         if (this.isImage()) {
             return `[Image ${this.asBytes().hash()}]`;
         }
-        return new TextDecoder().decode(this.#bytes);
+        return (this.#cachedString ??= new TextDecoder().decode(this.#bytes));
     }
 
     mimetype () {
@@ -331,6 +332,7 @@ export class ClipboardEntry {
     setText (text) {
         if (!this.isText()) return;
         this.#bytes = new TextEncoder().encode(text);
+        this.#cachedString = null;
     }
 
     #tag = null;
